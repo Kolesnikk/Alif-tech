@@ -1,7 +1,8 @@
-import { createStore } from "vuex";
+import { createStore, createLogger } from "vuex";
 import quotes from "./modules/quotes";
 
 export default createStore({
+  plugins: [createLogger()],
   modules: {
     quotes,
   },

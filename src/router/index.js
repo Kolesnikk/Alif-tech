@@ -1,17 +1,24 @@
 import { createRouter, createWebHistory } from "vue-router";
-import home from "@/views/home";
-import newPost from "@/views/createPost";
+import quotes from "@/views/quotes";
+import createPost from "@/views/quotes/create.vue";
+// import qoute from "@/views/quote.vue";
+const qoute = () => import("@/views/quotes/quote.vue");
 
 const routes = [
   {
     name: "home",
     path: "/",
-    component: home,
+    component: quotes,
+  },
+  {
+    path: "/:id",
+    component: qoute,
+    name: "quote",
   },
   {
     name: "newPost",
     path: "/new-post",
-    component: newPost,
+    component: createPost,
   },
 ];
 
