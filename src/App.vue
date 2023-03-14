@@ -1,17 +1,21 @@
 <template>
-  <sidebar></sidebar>
-  <router-view />
+  <div class="container">
+    <Header></Header>
+    <router-view />
+  </div>
 </template>
 <script>
-import sidebar from "@/components/sidebar.vue";
+import Header from "@/components/header";
 export default {
   components: {
-    sidebar,
+    Header,
   },
 };
 </script>
 <style lang="scss">
+@import "@/assets/scss/variables.scss";
 #app {
-  display: flex;
+  background: $main-bg;
+  min-height: 100vh;
 }
 </style>
