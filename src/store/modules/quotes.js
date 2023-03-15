@@ -3,13 +3,15 @@ import axios from "axios";
 export default {
   namespaced: true,
   state: () => ({
-    quotes: null,
+    quotes: [],
     quote: null,
   }),
   mutations: {
+    ADD_QUOTE(state, payload) {
+      state.quotes.unshift(payload);
+    },
     SET_QUOTES(state, payload) {
       state.quotes = payload;
-      console.log(state.quotes, "state.quotes");
     },
     SET_QUOTE(state, payload) {
       state.quote = payload;
@@ -17,14 +19,30 @@ export default {
     REMOVE_QUOTE(state, payload) {
       state.quotes = state.quotes.filter((quote) => quote.id !== payload);
     },
+    UPDATE_QUOTE(state, { id, body }) {
+      state.quotes = state.quotes.map((quote) => {
+        if (quote.id === id) {
+          const updatedQuote = { ...quote };
+          for (let key in body) {
+            if (updatedQuote[key] !== body[key]) {
+              updatedQuote[key] = body[key];
+            }
+          }
+          return updatedQuote;
+        }
+        return quote;
+      });
+    },
   },
   actions: {
-    async createQuote(_, payload) {
+    async createQuote({ commit }, payload) {
       try {
-        await axios.post(
+        const { data } = await axios.post(
           "https://aliftech-bcdc3-default-rtdb.europe-west1.firebasedatabase.app/quotes.json",
           payload
         );
+        const res = { ...payload, id: data?.name };
+        commit("ADD_QUOTE", res);
       } catch (e) {
         console.log(e);
       }
@@ -58,25 +76,28 @@ export default {
         await axios.delete(
           `https://aliftech-bcdc3-default-rtdb.europe-west1.firebasedatabase.app/quotes/${id}.json`
         );
-        // eslint-disable-next-line no-undef
       } catch (e) {
         console.log(e);
       }
     },
-    async updateQuote(_, payload) {
+    async updateQuote(_, { id, body }) {
       try {
-        await axios.put(
-          `https://aliftech-bcdc3-default-rtdb.europe-west1.firebasedatabase.app/quotes/${payload.id}.json`,
-          payload
+        await axios.patch(
+          `https://aliftech-bcdc3-default-rtdb.europe-west1.firebasedatabase.app/quotes/${id}.json`,
+          body
         );
-        console.log(payload);
       } catch (e) {
         console.log(e);
       }
     },
   },
   getters: {
-    get_quotes: (state) => state.quotes?.reverse(),
+    get_quotes: (state) =>
+      state.quotes?.sort((a, b) => {
+        const dateA = new Date(a.createAt);
+        const dateB = new Date(b.createAt);
+        return dateB - dateA;
+      }),
     get_quote: (state) => state.quote,
   },
 };

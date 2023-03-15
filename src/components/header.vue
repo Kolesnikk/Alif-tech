@@ -51,15 +51,30 @@ export default {
 
     &-link {
       color: $primary-color;
+      position: relative;
       text-transform: uppercase;
       transition: 0.2s;
+      font-weight: 600;
+
+      &.active::before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -7px;
+        border-radius: 50%;
+        background: $genre-color;
+      }
 
       &:hover {
-        color: #919191;
+        color: $genre-color;
       }
 
       &.active {
-        color: #919191;
+        color: $genre-color;
       }
     }
 

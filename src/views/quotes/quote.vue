@@ -5,9 +5,7 @@
     <p>{{ quote?.quoteGenre }}</p>
     <p>last edit : {{ parseDate(quote?.lastEdit) }}</p>
     <p>created : {{ parseDate(quote?.createAt) }}</p>
-    <button class="btn btn-danger" @click.prevent="remove($route.params.id)">
-      Удалить
-    </button>
+    <button class="btn btn-danger" @click.prevent="remove">Удалить</button>
     <button class="btn btn-warning" @click="openModel()">Изменить</button>
     <div class="popUp_wrapper">
       <div class="popUp" v-if="isActive">
@@ -49,6 +47,13 @@
                   <button class="btn btn-primary" type="submit">
                     Изменить
                   </button>
+                  <button
+                    class="btn btn-primary"
+                    type="submit"
+                    @click.prevent.esc="isActive = false"
+                  >
+                    Закрыть
+                  </button>
                 </div>
               </form>
             </div>
@@ -61,13 +66,14 @@
 </template>
 
 <script>
+import dataTime from "@/mixins/dataTime.js";
 export default {
   name: "quote-one",
+  mixins: [dataTime],
   data() {
     return {
       isActive: false,
       editForm: {
-        quoteId: this.id,
         quoteText: "",
         quoteAuthor: "",
         quoteGenre: "",
@@ -78,21 +84,29 @@ export default {
     quoteId() {
       return this.$route.params.id;
     },
-    parseDate() {
-      return (code) => new Date(code).toLocaleDateString();
-    },
     quote() {
       return this.$store.getters["quotes/get_quote"];
     },
   },
   methods: {
-    async remove(id) {
-      await this.$store.dispatch("quotes/removeQuote", id);
-      await this.$router.push("/");
+    async remove() {
+      this.$store.commit("quotes/REMOVE_QUOTE", this.quoteId);
+      this.$router.push("/");
+      await this.$store.dispatch("quotes/removeQuote", this.quoteId);
     },
     async updateQuote() {
-      await this.$store.dispatch("quotes/updateQuote", this.editForm);
-      await this.$router.push("/");
+      this.editForm.lastEdit = new Date().getTime();
+      this.$store.commit("quotes/SET_QUOTE", this.editForm);
+      this.$store.commit("quotes/UPDATE_QUOTE", {
+        id: this.quoteId,
+        body: this.editForm,
+      });
+      await this.$store.dispatch("quotes/updateQuote", {
+        id: this.quoteId,
+        body: this.editForm,
+      });
+      this.isActive = false;
+      // this.$router.push("/");
     },
     openModel() {
       this.editForm = JSON.parse(JSON.stringify(this.quote));
@@ -102,16 +116,22 @@ export default {
   mounted() {
     this.$store.dispatch("quotes/getQuote", this.quoteId);
   },
+  unmounted() {
+    this.$store.commit("quotes/SET_QUOTE", {});
+  },
 };
 </script>
 
-<style>
+<style lang="scss">
+.main {
+  color: white;
+}
 .popUp {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: #fff;
+  background: #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   padding: 20px;
   border-radius: 16px;
