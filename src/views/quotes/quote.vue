@@ -1,67 +1,119 @@
 <template>
   <div class="main">
-    <p>{{ quote?.quoteText }}</p>
-    <p>{{ quote?.quoteAuthor }}</p>
-    <p>{{ quote?.quoteGenre }}</p>
-    <p>last edit : {{ parseDate(quote?.lastEdit) }}</p>
-    <p>created : {{ parseDate(quote?.createAt) }}</p>
-    <button class="btn btn-danger" @click.prevent="remove">Удалить</button>
-    <button class="btn btn-warning" @click="openModel()">Изменить</button>
-    <div class="popUp_wrapper">
-      <div class="popUp" v-if="isActive">
-        <div class="popUp__body">
-          <div class="popUp__content">
-            <div class="popUp__header">
-              <h3 class="popUp__title">Изменить цитату</h3>
-              <button class="popUp__close" @click="isActive = false">
-                <i class="fas fa-times"></i>
-              </button>
+    <div class="buttons">
+      <div class="buttons_left">
+        <router-link to="/" class="btn back">
+          <ion-icon name="return-up-back-outline"></ion-icon>
+        </router-link>
+      </div>
+      <div class="buttons_right">
+        <button class="btn change" @click="openModel()">
+          <ion-icon name="create-outline"></ion-icon>
+        </button>
+        <button class="btn delete" @click.prevent="remove">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+    <ul class="params">
+      <li class="params_row">
+        <h1 class="params_title">Содержимое</h1>
+        <p class="params_description">{{ quote?.quoteText }}</p>
+      </li>
+      <li class="params_row">
+        <h1 class="params_title">Автор</h1>
+        <p class="params_description">{{ quote?.quoteAuthor }}</p>
+      </li>
+      <li class="params_row">
+        <h1 class="params_title">Жанр</h1>
+        <p class="params_description">
+          <span v-for="genre in quote?.quoteGenre" :key="genre.id">
+            {{ genre }}
+          </span>
+        </p>
+      </li>
+      <li class="params_row">
+        <h1 class="params_title">Создание</h1>
+        <p class="params_description">{{ parseDate(quote?.createAt) }}</p>
+      </li>
+      <li class="params_row">
+        <h1 class="params_title">Изменение</h1>
+        <p class="params_description">{{ parseDate(quote?.lastEdit) }}</p>
+      </li>
+    </ul>
+    <transition>
+      <div class="editQuote_form" v-if="isActive">
+        <div class="editQuote_form-header">
+          <h1 class="editQuote_form-title">Редактирование цитаты</h1>
+          <button class="btn close" @click="isActive = false">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+        <div class="editQuote_form-body">
+          <div class="editQuote_form-left">
+            <div class="editQuote_form-row">
+              <label for="quoteText" class="editQuote_form-label">
+                Содержимое
+              </label>
+              <textarea
+                id="quoteText"
+                class="editQuote_form-input"
+                v-model="editForm.quoteText"
+              ></textarea>
             </div>
-            <div class="popUp__main">
-              <form class="form" @submit.prevent="updateQuote()">
-                <div class="form__group">
-                  <label class="form__label" for="quoteText">Цитата</label>
-                  <textarea
-                    class="form__input"
-                    id="quoteText"
-                    v-model="editForm.quoteText"
-                  ></textarea>
-                </div>
-                <div class="form__group">
-                  <label class="form__label" for="quoteAuthor">Автор</label>
+          </div>
+          <div class="editQuote_form-right">
+            <div class="editQuote_form-row">
+              <label for="quoteAuthor" class="editQuote_form-label">
+                Автор
+              </label>
+              <input
+                id="quoteAuthor"
+                class="editQuote_form-input"
+                v-model="editForm.quoteAuthor"
+              />
+            </div>
+            <div class="editQuote_form-row">
+              <div class="checkBox">
+                <p>Жанр</p>
+                <label class="checkbox">
                   <input
-                    class="form__input"
-                    id="quoteAuthor"
-                    v-model="editForm.quoteAuthor"
-                  />
-                </div>
-                <div class="form__group">
-                  <label class="form__label" for="quoteGenre">Жанр</label>
-                  <input
-                    class="form__input"
-                    id="quoteGenre"
+                    type="checkbox"
                     v-model="editForm.quoteGenre"
+                    value="Философия"
                   />
-                </div>
-                <div class="form__group">
-                  <button class="btn btn-primary" type="submit">
-                    Изменить
-                  </button>
-                  <button
-                    class="btn btn-primary"
-                    type="submit"
-                    @click.prevent.esc="isActive = false"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-              </form>
+                  <span class="checkbox__icon"></span>
+                  <span class="checkbox__label">Философия</span>
+                </label>
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    v-model="editForm.quoteGenre"
+                    value="Мотивация"
+                  />
+                  <span class="checkbox__icon"></span>
+                  <span class="checkbox__label">Мотивация</span>
+                </label>
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    v-model="editForm.quoteGenre"
+                    value="Комедия"
+                  />
+                  <span class="checkbox__icon"></span>
+                  <span class="checkbox__label">Комедия</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
+        <div class="editQuote_form-footer">
+          <button class="btn save" @click="updateQuote()">
+            Изменить цитату
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="overflow" v-if="isActive"></div>
+    </transition>
   </div>
 </template>
 
@@ -76,7 +128,7 @@ export default {
       editForm: {
         quoteText: "",
         quoteAuthor: "",
-        quoteGenre: "",
+        quoteGenre: [],
       },
     };
   },
@@ -106,7 +158,6 @@ export default {
         body: this.editForm,
       });
       this.isActive = false;
-      // this.$router.push("/");
     },
     openModel() {
       this.editForm = JSON.parse(JSON.stringify(this.quote));
@@ -123,27 +174,255 @@ export default {
 </script>
 
 <style lang="scss">
+@import "@/assets/scss/variables.scss";
 .main {
+  padding-bottom: 40px;
   color: white;
+
+  .params {
+    list-style: none;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 16px;
+    box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.35);
+
+    .params_row {
+      flex: 0 0 100%;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background-color: $light-bg;
+      }
+      &:hover .params_title {
+        border-right: solid 1px $dark-bg;
+      }
+
+      &:not(:last-child) {
+        border-bottom: solid 1px $light-bg;
+      }
+
+      .params_title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 170px;
+        height: 100%;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 20px;
+        margin-bottom: 0;
+        color: $genre-color;
+        border-right: solid 1px $light-bg;
+      }
+
+      .params_description {
+        font-size: 16px;
+        font-weight: 400;
+        margin-bottom: 0;
+        padding: 20px;
+
+        span {
+          display: inline-block;
+          margin-right: 20px;
+        }
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+
+    .btn {
+      flex: 0 0 48%;
+      color: #fff;
+      font-size: 25px;
+
+      &.back:hover {
+        color: $link-color;
+      }
+      &.change:hover {
+        color: rgb(26, 133, 26);
+      }
+      &.delete:hover {
+        color: rgb(216, 19, 19);
+      }
+    }
+  }
+
+  .editQuote_form {
+    margin-top: 20px;
+    &-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: $dark-bg;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+
+      .editQuote_form-title {
+        font-size: 25px;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: $genre-color;
+      }
+
+      .btn {
+        color: #fff;
+        font-size: 25px;
+
+        &.close:hover {
+          color: rgb(216, 19, 19);
+        }
+      }
+    }
+
+    &-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: $light-bg;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+
+      @media (max-width: 768px) {
+        flex-wrap: wrap;
+      }
+
+      .editQuote_form-left {
+        flex: 0 0 70%;
+        padding-right: 20px;
+
+        label {
+          color: $genre-color;
+          font-weight: 600;
+        }
+
+        .editQuote_form-input {
+          width: 100%;
+          border-radius: 8px;
+          min-height: 150px;
+          padding: 10px;
+          font-size: 18px;
+          background: $dark-bg;
+          color: $primary-color;
+        }
+
+        @media (max-width: 768px) {
+          flex: 0 0 100%;
+          padding-right: 0;
+        }
+      }
+
+      .editQuote_form-right {
+        flex: 0 0 30%;
+        padding-left: 20px;
+
+        .editQuote_form-row {
+          margin-bottom: 20px;
+
+          .editQuote_form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: $genre-color;
+            margin-bottom: 10px;
+          }
+
+          .editQuote_form-input {
+            width: 100%;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 18px;
+            background: $dark-bg;
+            color: $primary-color;
+          }
+        }
+        p {
+          font-weight: 600;
+          color: $genre-color;
+        }
+
+        .checkbox {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          font-size: 16px;
+
+          &__icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 2px solid #bbb;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+
+            &:after {
+              content: "";
+              display: block;
+              width: 10px;
+              height: 10px;
+              margin: 3px;
+              background-color: #fff;
+              border-radius: 2px;
+              transition: transform 0.3s;
+              transform: scale(0);
+            }
+          }
+          &__label {
+            flex: 1;
+          }
+          &:hover {
+            &__icon {
+              border-color: #999;
+            }
+          }
+          input[type="checkbox"] {
+            display: none;
+
+            &:checked + .checkbox__icon {
+              background-color: $genre-color;
+              border-color: $genre-color;
+              &:after {
+                transform: scale(1);
+              }
+            }
+          }
+        }
+
+        @media (max-width: 768px) {
+          flex: 0 0 100%;
+          padding-right: 0;
+          padding-left: 0;
+          margin-top: 10px;
+        }
+      }
+    }
+
+    &-footer {
+      .btn.save {
+        width: 100%;
+        background-color: $genre-color;
+        border-radius: 8px;
+        margin-top: 20px;
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+  }
 }
-.popUp {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: #ccc;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  padding: 20px;
-  border-radius: 16px;
-  z-index: 1;
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
 }
-.overflow {
-  position: fixed;
-  z-index: 0;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>

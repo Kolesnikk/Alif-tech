@@ -1,3 +1,8 @@
+export function sortDate(arr, key) {
+  return arr.sort((a, b) => {
+    return new Date(b[key]) - new Date(a[key]);
+  });
+}
 export default {
   computed: {
     parseDate() {

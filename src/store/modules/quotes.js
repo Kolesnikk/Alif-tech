@@ -1,9 +1,14 @@
 import axios from "axios";
-
+import { sortDate } from "@/mixins/dataTime";
 export default {
   namespaced: true,
   state: () => ({
     quotes: [],
+    filteredQuotes: [],
+    filteredSearchQuotes: [],
+    filterGenre: "",
+    searchValue: "",
+    typeDate: "createAt",
     quote: null,
   }),
   mutations: {
@@ -32,6 +37,36 @@ export default {
         }
         return quote;
       });
+    },
+    SET_FILTER_GENRE(state, payload) {
+      // трабла с тем что state перезаписываем но когда сбрасываем, стейт теряется и чтоб снова получить все квоты надо обновить страницу РЕШЕНО
+      state.filterGenre = payload;
+      if (payload !== "") {
+        state.filteredQuotes = state.quotes.filter((quote) =>
+          quote.quoteGenre.includes(payload)
+        );
+      } else {
+        state.filteredQuotes = state.quotes;
+      }
+    },
+    SET_TYPE_DATE(state, payload) {
+      state.typeDate = payload;
+    },
+    SET_SEARCH_VALUE(state, { value, type }) {
+      state.searchValue = value;
+      if (value !== "") {
+        let res = state.quotes.filter((quote) =>
+          quote[type].toLowerCase().includes(value.toLowerCase())
+        );
+        state.filteredSearchQuotes = res.sort((a, b) =>
+          a[type].localeCompare(b[type], undefined, {
+            sensitivity: "base",
+            ignorePunctuation: true,
+          })
+        );
+      } else {
+        state.filteredSearchQuotes = state.quotes;
+      }
     },
   },
   actions: {
@@ -92,12 +127,27 @@ export default {
     },
   },
   getters: {
-    get_quotes: (state) =>
-      state.quotes?.sort((a, b) => {
-        const dateA = new Date(a.createAt);
-        const dateB = new Date(b.createAt);
-        return dateB - dateA;
-      }),
+    get_quotes: (state) => {
+      let quotes = state.quotes;
+      if (state.filterGenre !== "") {
+        quotes = state.filteredQuotes;
+      }
+      if (state.searchValue !== "") {
+        quotes = state.filteredSearchQuotes;
+      }
+      return sortDate(quotes, state.typeDate);
+    },
     get_quote: (state) => state.quote,
+    get_genres: (state) => {
+      const genres = state.quotes.map((quote) => quote.quoteGenre);
+      console.log(genres, "genres");
+      return [...new Set(genres.flat())];
+    },
   },
 };
+
+// state.quotes?.sort((a, b) => {
+//   const dateA = new Date(a.createAt);
+//   const dateB = new Date(b.createAt);
+//   return dateB - dateA;
+// })

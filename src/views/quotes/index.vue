@@ -6,14 +6,44 @@
     </div>
     <div class="searchBar-filters">
       <div class="radio-group">
-        <input type="radio" id="radio1" name="radio-group" />
+        <input
+          type="radio"
+          id="radio1"
+          name="radio-group"
+          v-model="searchType"
+          value="quoteAuthor"
+        />
         <label for="radio1">Автор</label>
 
-        <input type="radio" id="radio2" name="radio-group" />
+        <input
+          type="radio"
+          id="radio2"
+          name="radio-group"
+          v-model="searchType"
+          value="quoteText"
+        />
         <label for="radio2">Текст</label>
-
-        <input type="radio" id="radio3" name="radio-group" />
-        <label for="radio3">Жанр</label>
+      </div>
+    </div>
+    <div class="filters">
+      <div>
+        <label>{{ filter_genre }}</label>
+        <select v-model="filter_genre">
+          <option value="" selected>
+            {{ filter_genre === "" ? "Выберите жанр" : "Сбросить" }}
+          </option>
+          <option v-for="(genre, idx) in genres" :key="idx" :value="genre">
+            {{ genre }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label></label>
+        <select v-model="sort_date">
+          <option v-for="(type, idx) in dataArr" :key="idx" :value="type">
+            {{ type === "createAt" ? "Дата создания" : "Дата изменения" }}
+          </option>
+        </select>
       </div>
     </div>
   </div>
@@ -46,9 +76,14 @@
             {{ quote?.quoteAuthor }}
           </i>
         </p>
-        <p class="quotes_card-footer-date">
-          {{ parseDate(quote?.createAt) }}
-        </p>
+        <div>
+          <p class="quotes_card-footer-date">
+            create at: {{ parseDate(quote?.createAt) }}
+          </p>
+          <p class="quotes_card-footer-date">
+            last edit: {{ parseDate(quote?.lastEdit) }}
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -60,9 +95,39 @@ import dataTime from "@/mixins/dataTime.js";
 export default {
   name: "home-page",
   mixins: [dataTime],
+  data() {
+    return {
+      searchValue: "",
+      searchType: "quoteAuthor",
+      filter_genre: "",
+      sort_date: "createAt",
+      dataArr: ["createAt", "lastEdit"],
+    };
+  },
   computed: {
     quotes() {
       return this.$store.getters["quotes/get_quotes"];
+    },
+    genres() {
+      return this.$store.getters["quotes/get_genres"];
+    },
+  },
+  watch: {
+    searchValue(value) {
+      this.$store.commit("quotes/SET_SEARCH_VALUE", {
+        value,
+        type: this.searchType,
+      });
+    },
+    filter_genre(value) {
+      if (this.filter_genre !== "") {
+        this.$store.commit("quotes/SET_FILTER_GENRE", value);
+      } else {
+        this.$store.commit("quotes/SET_FILTER_GENRE", "");
+      }
+    },
+    sort_date(value) {
+      this.$store.commit("quotes/SET_TYPE_DATE", value);
     },
   },
   methods: {
@@ -89,9 +154,41 @@ export default {
   align-items: center;
   margin-bottom: 20px;
 
+  .filters {
+    display: flex;
+    flex: 0 0 33%;
+    justify-content: space-between;
+    align-items: center;
+
+    div {
+      display: flex;
+      align-items: center;
+
+      select {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 1rem;
+        background-color: $genre-color;
+        color: #fff;
+        margin-left: 20px;
+
+        option {
+          color: #fff;
+          background-color: $genre-color;
+        }
+
+        @media (max-width: 480px) {
+          margin-right: 10px;
+          margin-left: 0;
+        }
+      }
+    }
+  }
+
   &-input {
     display: flex;
     align-items: center;
+    flex: 0 0 33%;
     width: 50%;
     background-color: $light-bg;
     border-radius: 10px;
@@ -116,6 +213,7 @@ export default {
 
   &-filters {
     display: flex;
+    flex: 0 0 15%;
     align-items: center;
     width: 50%;
     height: 41px;
@@ -150,6 +248,35 @@ export default {
           color: #fff;
         }
       }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    .searchBar-input {
+      flex: 0 0 100%;
+      margin-bottom: 20px;
+    }
+    .searchBar-filter {
+      flex: 0 0 48%;
+    }
+    .filters {
+      flex: 0 0 48%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .searchBar-filter {
+      flex: 0 0 100%;
+    }
+    .filters {
+      select {
+        margin-left: 0;
+      }
+    }
+
+    .searchBar-input {
+      margin-bottom: 10px;
     }
   }
 }
@@ -188,6 +315,12 @@ export default {
           background-color: $genre-color;
           padding: 5px 10px;
           border-radius: 8px;
+
+          @media (max-width: 480px) {
+            padding: 5px;
+            font-weight: 400;
+            font-size: 12px;
+          }
         }
       }
 
@@ -201,7 +334,6 @@ export default {
           background-color: transparent;
           border: none;
           cursor: pointer;
-          margin-right: 10px;
           color: $primary-color;
           font-size: 20px;
           transition: 0.3s;
@@ -229,12 +361,27 @@ export default {
       }
 
       &-date {
-        font-size: 16px;
         color: $primary-color;
         opacity: 0.7;
         font-size: 14px;
+
+        @media (max-width: 480px) {
+          font-size: 12px;
+          margin-bottom: 10px;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      .quotes_card-options {
+        .btn {
+          font-size: 18px;
+        }
       }
     }
   }
+}
+.filters {
+  color: #fff;
 }
 </style>

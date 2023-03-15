@@ -102,9 +102,6 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/scss/variables.scss";
 .form-wrapper {
-  //box-shadow: 0px 15px 15px rgba(0, 0, 0, 0.35);
-  //background-color: $light-bg;
-  //padding: 20px;
   border-radius: 10px;
 
   .form {
@@ -213,6 +210,16 @@ export default {
       border: none;
       color: #fff;
       font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      &_left {
+        flex: 0 0 100%;
+      }
+      &_right {
+        flex: 0 0 100%;
+        margin-left: 0;
+      }
     }
   }
 }
